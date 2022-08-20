@@ -21,14 +21,21 @@ private:
     uint8_t keypad[KEYPAD_SIZE]{};
     uint32_t video[SCREEN_SIZE]{};
     uint16_t opcode;
-    void InstrCLS();
-    void InstrRND();
-    void InstrRET();
-    void InstrJP();
-    void InstrCALL();
+
+    void OP_00E0();
+    void OP_00EE();
+    void OP_1nnn();
+    void OP_2nnn();
+    void OP_3xkk();
+    void OP_4xkk();
+    void OP_5xy0();
+    void OP_6xkk();
+    void OP_7xkk();
+    void OP_8xy0();
+    void OP_Cxkk();
 
 public:
     Chip8();
     void LoadROM(const char *filename);
-    void Loop();
+    void Parse();
 };

@@ -1,6 +1,8 @@
 #include "chip8.hpp"
 #include <fstream>
 #include <cstring>
+#include <stdio.h>
+#include <iostream>
 
 const unsigned int FONTSET_SIZE = 80;
 const unsigned int FONSTSET_START_ADDRESS = 0x050;
@@ -36,6 +38,7 @@ Chip8::Chip8()
     }
 };
 
+/// @brief Load ROM instructions to the Chip8 memory
 void Chip8::LoadROM(const char *filename)
 {
     // Open file as binary and move pointer to the end
@@ -65,37 +68,36 @@ void Chip8::LoadROM(const char *filename)
     }
 };
 
-// Clear the screen
-void Chip8::InstrCLS()
+/// @brief Clear Screen by setting all bytes to 0
+void Chip8::OP_00E0()
 {
     std::memset(video, 0, sizeof(video));
 };
 
-// set Random number between 0-255 to given register
-void Chip8::InstrRND()
+/// @brief Set random number between 0-255 to Vx
+void Chip8::OP_Cxkk()
 {
-    // get the register value from opcode by using AND
     uint8_t Vx = (opcode & 0x0F00u);
     uint8_t randByte = rand() % (255 - 0 + 1) + 0;
     registers[Vx] = randByte;
 };
 
-// End soubroutine
-void Chip8::InstrRET()
+/// @brief End soubroutine and return to PC in call stack
+void Chip8::OP_00EE()
 {
     pc = stack[sp];
     sp -= 1;
 };
 
-// set program counter to given address
-void Chip8::InstrJP()
+/// @brief Set PC to given address
+void Chip8::OP_1nnn()
 {
     uint16_t address = (opcode & 0x0FFFu);
     pc = address;
 };
 
-// initialize given subroutine
-void Chip8::InstrCALL()
+/// @brief Set PC to given address as a subroutine call
+void Chip8::OP_2nnn()
 {
     sp += 1;
     stack[sp] = pc;
@@ -103,26 +105,80 @@ void Chip8::InstrCALL()
     pc = address;
 };
 
-// FIX: handling opcodes with dynamic values like kk, x, y
-void Chip8::Loop()
+/// @brief If Vx and kk are equal skip next instruction
+void Chip8::OP_3xkk()
 {
-    for (long i = 0; i < MEMORY_SIZE; ++i)
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t byte = (opcode & 0x00FFu);
+    if (registers[Vx] == byte)
     {
-        opcode = memory[START_ADDRESS + i];
-        uint8_t shortened = (opcode & 0xF00F);
-
-        switch (opcode)
-        {
-        case 0x0000u:
-            InstrCLS();
-            break;
-        case 0x000Eu:
-            InstrRET();
-            break;
-        default:
-            break;
-        };
-
         pc += 1;
     }
+};
+
+/// @brief If Vx and kk are not equal skip next instruction
+void Chip8::OP_4xkk()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t byte = (opcode & 0x00FFu);
+    if (registers[Vx] != byte)
+    {
+        pc += 1;
+    }
+}
+
+/// @brief if Vx and Vy are equal skip next instruction
+void Chip8::OP_5xy0()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    if (registers[Vx] == registers[Vy])
+    {
+        pc += 1;
+    }
+};
+
+/// @brief set Vx to byte
+void Chip8::OP_6xkk()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t byte = (opcode & 0x00FFu);
+    registers[Vx] = byte;
+};
+
+/// @brief Add byte to Vx
+void Chip8::OP_7xkk()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t byte = (opcode & 0x00FFu);
+    registers[Vx] += byte;
+};
+
+/// @brief Set Vx to Vy
+void Chip8::OP_8xy0()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    registers[Vx] = registers[Vy];
+};
+
+/// @brief Loop throught all instructions in memory
+void Chip8::Parse()
+{
+    opcode = memory[START_ADDRESS + pc];
+    std::cout << "Current opcode: " << sizeof(opcode) << std::endl;
+
+    switch (opcode)
+    {
+    case 0x0000u:
+        OP_00E0();
+        break;
+    case 0x000Eu:
+        OP_00EE();
+        break;
+    default:
+        break;
+    };
+
+    pc += 1;
 };
