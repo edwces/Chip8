@@ -14,5 +14,6 @@ int main()
     {
         std::cout << message << std::endl;
     }
+    chip8.Loop();
     return 0;
 }
