@@ -112,7 +112,7 @@ void Chip8::OP_3xkk()
     uint8_t byte = (opcode & 0x00FFu);
     if (registers[Vx] == byte)
     {
-        pc += 1;
+        pc += 2;
     }
 };
 
@@ -123,7 +123,7 @@ void Chip8::OP_4xkk()
     uint8_t byte = (opcode & 0x00FFu);
     if (registers[Vx] != byte)
     {
-        pc += 1;
+        pc += 2;
     }
 }
 
@@ -134,7 +134,7 @@ void Chip8::OP_5xy0()
     uint8_t Vy = (opcode & 0x00F0u);
     if (registers[Vx] == registers[Vy])
     {
-        pc += 1;
+        pc += 2;
     }
 };
 
@@ -267,27 +267,19 @@ void Chip8::OP_9xy0()
 
     if (registers[Vx] != registers[Vy])
     {
-        pc += 1;
+        pc += 2;
     }
 };
 
 /// @brief Execute Current instruction in memory
 void Chip8::Parse()
 {
-    opcode = memory[START_ADDRESS + pc];
-    std::cout << "Current opcode: " << sizeof(opcode) << std::endl;
+    opcode = (memory[pc] << 8u) | memory[pc + 1];
 
-    switch (opcode)
-    {
-    case 0x0000u:
-        OP_00E0();
-        break;
-    case 0x000Eu:
-        OP_00EE();
-        break;
-    default:
-        break;
-    };
+    std::cout << "----------PARSE----------" << std::endl
+              << "Current opcode: " << std::hex << opcode << std::endl
+              << "Current PC: " << pc << std::endl
+              << std::endl;
 
-    pc += 1;
+    pc += 2;
 };

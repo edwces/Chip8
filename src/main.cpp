@@ -16,5 +16,6 @@ int main()
     }
     chip8.Parse();
     chip8.Parse();
+    chip8.Parse();
     return 0;
 }
