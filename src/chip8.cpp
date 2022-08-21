@@ -162,7 +162,116 @@ void Chip8::OP_8xy0()
     registers[Vx] = registers[Vy];
 };
 
-/// @brief Loop throught all instructions in memory
+/// @brief Set Vx to Vx OR Vy
+void Chip8::OP_8xy1()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    registers[Vx] |= registers[Vy];
+};
+
+/// @brief Set Vx to Vx AND Vy
+void Chip8::OP_8xy2()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    registers[Vx] &= registers[Vy];
+};
+
+/// @brief Set Vx to Vx XOR Vy
+void Chip8::OP_8xy3()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    registers[Vx] ^= registers[Vy];
+};
+
+/// @brief Add Vy to Vx and if sum overflows set VF = 1
+void Chip8::OP_8xy4()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    uint16_t sum = Vx + Vy;
+    if (sum > 255u)
+    {
+        registers[0xF] = 1;
+    }
+    else
+    {
+        registers[0xF] = 0;
+    }
+
+    registers[Vx] = sum & 0xFFu;
+};
+
+/// @brief Subtract Vy from Vx and if Vx is bigger than Vy set
+///        VF to 1 else to 0
+void Chip8::OP_8xy5()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+
+    if (registers[Vx] > registers[Vy])
+    {
+        registers[0xF] = 1;
+    }
+    else
+    {
+        registers[0xF] = 0;
+    }
+    registers[Vx] -= Vy;
+};
+
+/// @brief Divide Vx by two and if least significant bit of Vx is 1,
+///        then VF is set to 1 else 0
+void Chip8::OP_8xy6()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    registers[0xF] = (registers[Vx] & 0x1u);
+    // we divide by bitwise operatios as normal division would transform value to int
+    registers[Vx] >>= 2;
+};
+
+/// @brief If Vy > Vx then VF = 1 and subtract Vx from Vy
+///        and set that on Vx
+void Chip8::OP_8xy7()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+
+    if (registers[Vy] > registers[Vx])
+    {
+        registers[0xF] = 1;
+    }
+    else
+    {
+        registers[0xF] = 0;
+    }
+    registers[Vx] = registers[Vy] - registers[Vx];
+};
+
+/// @brief If most significant Bit Vx is 1 then VF = 1 else VF = 0
+///        then multiply Vx by two
+void Chip8::OP_8xyE()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    registers[0xF] = (registers[Vx] & 0x80u) >> 7u;
+    registers[Vx] <<= 1;
+};
+
+/// @brief Skip next instructions if Vx != Vy
+void Chip8::OP_9xy0()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+
+    if (registers[Vx] != registers[Vy])
+    {
+        pc += 1;
+    }
+};
+
+/// @brief Execute Current instruction in memory
 void Chip8::Parse()
 {
     opcode = memory[START_ADDRESS + pc];
