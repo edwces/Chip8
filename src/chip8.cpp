@@ -376,6 +376,72 @@ void Chip8::OP_Fx0A()
     }
 };
 
+/// @brief Set delay timer to Vx
+void Chip8::OP_Fx15()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    delayTimer = registers[Vx];
+};
+
+/// @brief Set sound timer to Vx
+void Chip8::OP_Fx18()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    soundTimer = registers[Vx];
+};
+
+/// @brief Set Index to Index + Vx
+void Chip8::OP_Fx1E()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    index += registers[Vx];
+};
+
+/// @brief Set Index to location of sprite for digit Vx
+void Chip8::OP_Fx29()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint16_t address = FONSTSET_START_ADDRESS + (5 * registers[Vx]);
+    index = address;
+};
+
+/// @brief Place hundreds digit in Index, tens in Index + 1 and ones in Index + 2
+void Chip8::OP_Fx33()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t value = registers[Vx];
+
+    memory[index + 2] = value % 10;
+    value /= 10;
+
+    memory[index + 1] = value % 10;
+    value /= 10;
+
+    memory[index] = value % 10;
+};
+
+/// @brief Store registers throught V0 to Vx in memory starting at Index
+void Chip8::OP_Fx55()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+
+    for (uint8_t i = 0; i <= Vx; ++i)
+    {
+        memory[index + i] = registers[i];
+    }
+};
+
+/// @brief Read registers throught V0 to Vx in memory starting at Index into registers
+void Chip8::OP_Fx55()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+
+    for (uint8_t i = 0; i <= Vx; ++i)
+    {
+        registers[i] = memory[index + i];
+    }
+};
+
 /// @brief Execute Current instruction in memory
 void Chip8::Parse()
 {

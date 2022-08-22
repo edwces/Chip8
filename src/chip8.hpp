@@ -49,6 +49,13 @@ private:
     void OP_ExA1();
     void OP_Fx07();
     void OP_Fx0A();
+    void OP_Fx15();
+    void OP_Fx18();
+    void OP_Fx1E();
+    void OP_Fx29();
+    void OP_Fx33();
+    void OP_Fx55();
+    void OP_Fx65();
 
 public:
     Chip8();
