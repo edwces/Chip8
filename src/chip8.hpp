@@ -41,7 +41,14 @@ private:
     void OP_8xy7();
     void OP_8xyE();
     void OP_9xy0();
+    void OP_Annn();
+    void OP_Bnnn();
+    void OP_Dxyn();
     void OP_Cxkk();
+    void OP_Ex9E();
+    void OP_ExA1();
+    void OP_Fx07();
+    void OP_Fx0A();
 
 public:
     Chip8();

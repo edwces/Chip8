@@ -7,6 +7,8 @@
 const unsigned int FONTSET_SIZE = 80;
 const unsigned int FONSTSET_START_ADDRESS = 0x050;
 const unsigned int START_ADDRESS = 0x200;
+const unsigned int SCREEN_WIDTH = 64;
+const unsigned int SCREEN_HEIGHT = 32;
 
 // 16 chars 5 byte each
 uint8_t fontset[FONTSET_SIZE] =
@@ -268,6 +270,109 @@ void Chip8::OP_9xy0()
     if (registers[Vx] != registers[Vy])
     {
         pc += 2;
+    }
+};
+
+/// @brief Set Index to address
+void Chip8::OP_Annn()
+{
+    uint16_t address = (opcode & 0x0FFFu);
+    index = address;
+};
+
+/// @brief Jump to specific address + V0
+void Chip8::OP_Bnnn()
+{
+    uint16_t address = (opcode & 0x0FFFu);
+    pc = address + registers[0x0];
+};
+
+/// @brief Display n-byte sprite read starting from Index register
+///        each sprite has one byte width. We then XOR the screen
+///        to check if there is a pixel already in there. If any
+///        sprite width or height is to long it wraps itself from
+///        opposite site
+void Chip8::OP_Dxyn()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t Vy = (opcode & 0x00F0u);
+    uint8_t height = (opcode & 0x000Fu);
+
+    uint8_t xPos = registers[Vx] % SCREEN_WIDTH;
+    uint8_t yPos = registers[Vy] % SCREEN_HEIGHT;
+
+    registers[0xF] = 0;
+
+    // Read Sprite Bytes
+    for (unsigned int row = 0; row < height; ++row)
+    {
+        uint8_t spriteByte = memory[index + row];
+        for (unsigned int column = 0; column < 8; ++column)
+        {
+            // Read each Byte Pixel and get address of pixel that is already displayed
+            uint8_t spritePixel = spriteByte & (0x80u >> column);
+            uint32_t *screenPixel = &video[(xPos + column) + (yPos + row) * SCREEN_WIDTH];
+
+            // This works because pointer with zero value is converted to false
+            // check if we are drawing anything with sprite pixel
+            if (spritePixel)
+            {
+                // Collision detection
+                if (*screenPixel == 0xFFFFFFFFu)
+                {
+                    registers[0xF] = 1;
+                }
+                *screenPixel ^= 0xFFFFFFFFu;
+            }
+        }
+    }
+};
+
+/// @brief Skip instruction if key with value of Vx was pressed
+void Chip8::OP_Ex9E()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t key = registers[Vx];
+
+    if (keypad[key])
+    {
+        pc += 2;
+    }
+};
+
+/// @brief Skip instruction if key with value of Vx was not pressed
+void Chip8::OP_Ex9E()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    uint8_t key = registers[Vx];
+
+    if (!keypad[key])
+    {
+        pc += 2;
+    }
+};
+
+/// @brief Set Vx to delay timer value
+void Chip8::OP_Fx07()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    registers[Vx] = delayTimer;
+};
+
+/// @brief Wait for key press and then store the value in Vx
+void Chip8::OP_Fx0A()
+{
+    uint8_t Vx = (opcode & 0x0F00u);
+    for (uint8_t i = 0; i < KEYPAD_SIZE + 1; ++i)
+    {
+        if (i == 16)
+        {
+            pc -= 2;
+        }
+        if (keypad[i])
+        {
+            registers[Vx] = i;
+        }
     }
 };
 
