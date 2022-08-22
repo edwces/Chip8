@@ -515,7 +515,7 @@ void Chip8::OP_Fx55()
 };
 
 /// @brief Read registers throught V0 to Vx in memory starting at Index into registers
-void Chip8::OP_Fx55()
+void Chip8::OP_Fx65()
 {
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
@@ -526,7 +526,7 @@ void Chip8::OP_Fx55()
 };
 
 /// @brief Execute Current instruction in memory
-void Chip8::Parse()
+void Chip8::Tick()
 {
     opcode = (memory[pc] << 8u) | memory[pc + 1];
 

@@ -4,7 +4,9 @@
 const unsigned int REGISTER_SIZE = 16;
 const unsigned int MEMORY_SIZE = 4096;
 const unsigned int KEYPAD_SIZE = 16;
-const unsigned int SCREEN_SIZE = 64 * 32;
+const unsigned int VIDEO_WIDTH = 64;
+const unsigned int VIDEO_HEIGHT = 32;
+const unsigned int VIDEO_SIZE = VIDEO_WIDTH * VIDEO_HEIGHT;
 const unsigned int STACK_SIZE = 16;
 
 class Chip8
@@ -18,8 +20,6 @@ private:
     uint8_t sp;
     uint8_t delayTimer;
     uint8_t soundTimer;
-    uint8_t keypad[KEYPAD_SIZE]{};
-    uint32_t video[SCREEN_SIZE]{};
     uint16_t opcode;
 
     // OPCODES
@@ -74,6 +74,8 @@ private:
 
 public:
     Chip8();
+    uint8_t keypad[KEYPAD_SIZE]{};
+    uint32_t video[VIDEO_SIZE]{};
     void LoadROM(const char *filename);
-    void Parse();
+    void Tick();
 };
