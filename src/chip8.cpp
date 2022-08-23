@@ -7,8 +7,6 @@
 const unsigned int FONTSET_SIZE = 80;
 const unsigned int FONSTSET_START_ADDRESS = 0x050;
 const unsigned int START_ADDRESS = 0x200;
-const unsigned int SCREEN_WIDTH = 64;
-const unsigned int SCREEN_HEIGHT = 32;
 
 // 16 chars 5 byte each
 uint8_t fontset[FONTSET_SIZE] =
@@ -370,19 +368,20 @@ void Chip8::OP_Bnnn()
     pc = address + registers[0];
 };
 
-/// @brief Display n-byte sprite read starting from Index register
-///        each sprite has one byte width. We then XOR the screen
-///        to check if there is a pixel already in there. If any
-///        sprite width or height is to long it wraps itself from
-///        opposite site
+/** @brief Display n-byte sprite read starting from Index register
+ *         each sprite has one byte width. We then XOR the screen
+ *         to check if there is a pixel already in there. If any
+ *         sprite width or height is to long it wraps itself from
+ *         opposite site
+ */
 void Chip8::OP_Dxyn()
 {
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
     uint8_t height = (opcode & 0x000Fu);
 
-    uint8_t xPos = registers[Vx] % SCREEN_WIDTH;
-    uint8_t yPos = registers[Vy] % SCREEN_HEIGHT;
+    uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
+    uint8_t yPos = registers[Vy] % VIDEO_HEIGHT;
 
     registers[0xF] = 0;
 
@@ -394,18 +393,18 @@ void Chip8::OP_Dxyn()
         {
             // Read each Byte Pixel and get address of pixel that is already displayed
             uint8_t spritePixel = spriteByte & (0x80u >> column);
-            uint32_t *screenPixel = &video[(xPos + column) + (yPos + row) * SCREEN_WIDTH];
+            uint32_t *screenPixel = &video[(xPos + column) + (yPos + row) * VIDEO_WIDTH];
 
             // This works because pointer with zero value is converted to false
             // check if we are drawing anything with sprite pixel
             if (spritePixel)
             {
                 // Collision detection
-                if (*screenPixel == 0xFFFFFFFFu)
+                if (*screenPixel == 0xFFFFFFFF)
                 {
                     registers[0xF] = 1;
                 }
-                *screenPixel ^= 0xFFFFFFFFu;
+                *screenPixel ^= 0xFFFFFFFF;
             }
         }
     }
@@ -530,9 +529,9 @@ void Chip8::Tick()
 {
     opcode = (memory[pc] << 8u) | memory[pc + 1];
 
-    std::cout << "----------PARSE----------" << std::endl
+    std::cout << "DEBUG: ----------PARSE----------" << std::endl
               << "Current opcode: " << std::hex << opcode << std::endl
-              << "Current PC: " << pc << std::endl
+              << "Current program counter: " << pc << std::endl
               << std::endl;
 
     pc += 2;
