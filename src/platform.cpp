@@ -35,17 +35,25 @@ bool Platform::ProccessEvents(uint8_t *keys)
         switch (event.type)
         {
         case SDL_QUIT:
+        {
             quit = true;
-            break;
+        }
+        break;
         case SDL_KEYDOWN:
+        {
             switch (event.key.keysym.sym)
             {
-            case (SDLK_ESCAPE):
+            case SDLK_ESCAPE:
+            {
                 quit = true;
-                break;
+            }
+            break;
             case SDLK_x:
+            {
+
                 keys[0] = 1;
-                break;
+            }
+            break;
             case SDLK_1:
             {
                 keys[1] = 1;
@@ -136,7 +144,11 @@ bool Platform::ProccessEvents(uint8_t *keys)
             }
             break;
             }
+        }
+        break;
         case SDL_KEYUP:
+        {
+
             switch (event.key.keysym.sym)
             {
             case SDLK_x:
@@ -235,6 +247,8 @@ bool Platform::ProccessEvents(uint8_t *keys)
             }
             break;
             }
+        }
+        break;
         };
     };
 

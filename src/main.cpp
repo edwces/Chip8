@@ -5,7 +5,7 @@
 #include "platform.hpp"
 
 const unsigned int DEFAULT_VIDEO_SCALE = 10;
-const unsigned int DEFAULT_TICK_DELAY = 1;
+const unsigned int DEFAULT_TICK_DELAY = 5;
 
 int main(int argc, char **argv)
 {
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
         if (deltaTime > DEFAULT_TICK_DELAY)
         {
-            lastTick = std::chrono::high_resolution_clock::now();
+            lastTick = currentTime;
             chip8.Tick();
             platform.Update(chip8.video, videoPitch);
         };

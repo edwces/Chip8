@@ -17,7 +17,7 @@ private:
     uint16_t index;
     uint16_t pc;
     uint16_t stack[STACK_SIZE]{};
-    uint8_t sp;
+    uint8_t sp{};
     uint8_t delayTimer;
     uint8_t soundTimer;
     uint16_t opcode;

@@ -163,15 +163,15 @@ void Chip8::OP_00E0()
 void Chip8::OP_Cxkk()
 {
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
-    uint8_t randByte = rand() % (255 - 0 + 1) + 0;
-    registers[Vx] = randByte;
+    uint8_t Byte = opcode & 0x00FFu;
+    registers[Vx] = (std::rand() * 255) & Byte;
 };
 
 /// @brief End soubroutine and return to PC in call stack
 void Chip8::OP_00EE()
 {
+    --sp;
     pc = stack[sp];
-    sp -= 1;
 };
 
 /// @brief Set PC to given address
@@ -184,9 +184,9 @@ void Chip8::OP_1nnn()
 /// @brief Set PC to given address as a subroutine call
 void Chip8::OP_2nnn()
 {
-    sp += 1;
-    stack[sp] = pc;
     uint16_t address = (opcode & 0x0FFFu);
+    stack[sp] = pc;
+    ++sp;
     pc = address;
 };
 
@@ -276,8 +276,8 @@ void Chip8::OP_8xy4()
 {
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Vy = (opcode & 0x00F0u) >> 4u;
-    uint16_t sum = Vx + Vy;
-    if (sum > 255u)
+    uint16_t sum = registers[Vx] + registers[Vy];
+    if (sum > 255U)
     {
         registers[0xF] = 1;
     }
@@ -304,7 +304,7 @@ void Chip8::OP_8xy5()
     {
         registers[0xF] = 0;
     }
-    registers[Vx] -= Vy;
+    registers[Vx] -= registers[Vy];
 };
 
 /// @brief Divide Vx by two and if least significant bit of Vx is 1,
@@ -314,7 +314,7 @@ void Chip8::OP_8xy6()
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     registers[0xF] = (registers[Vx] & 0x1u);
     // we divide by bitwise operatios as normal division would transform value to int
-    registers[Vx] >>= 2;
+    registers[Vx] >>= 1;
 };
 
 /// @brief If Vy > Vx then VF = 1 and subtract Vx from Vy
@@ -367,7 +367,7 @@ void Chip8::OP_Annn()
 void Chip8::OP_Bnnn()
 {
     uint16_t address = (opcode & 0x0FFFu);
-    pc = address + registers[0x0];
+    pc = address + registers[0];
 };
 
 /// @brief Display n-byte sprite read starting from Index register
